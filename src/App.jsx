@@ -46,7 +46,7 @@ export default function App() {
   const [scannedFiles, setScannedFiles] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
   const [killer, setKiller] = useState('');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   useEffect(() => {
     if (screen !== 'game' && screen !== 'deduction') return;
@@ -65,8 +65,17 @@ export default function App() {
     }, 1500);
   };
 
+  const startGame = () => {
+    setScreen('game');
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen().catch(err => console.log("Fullscreen blocked:", err));
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen().catch(err => console.log("Fullscreen blocked:", err));
+    }
+  };
+
   return (
-    // FIXED: Using style={{height: '100dvh'}} forces it to respect mobile browser address bars perfectly
     <div className="fixed top-0 left-0 w-full bg-black font-mono flex items-center justify-center overflow-hidden selection:bg-cyan-500/30" style={{ height: '100dvh' }}>
       <div className="absolute inset-0 pointer-events-none z-20 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)]" />
 
@@ -105,7 +114,7 @@ export default function App() {
               </div>
 
               <button 
-                onClick={() => setScreen('game')}
+                onClick={startGame}
                 className="w-full relative py-2.5 md:py-4 bg-cyan-600/90 hover:bg-cyan-500 text-white font-bold text-xs md:text-sm uppercase tracking-widest rounded shadow-[0_0_15px_rgba(6,182,212,0.6)] active:scale-95 transition-all"
               >
                 Start Investigation
@@ -119,7 +128,6 @@ export default function App() {
       {(screen === 'game' || screen === 'deduction') && (
         <motion.div 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}
-          // FIXED: Uses 100dvh math so it safely boxes itself inside the browser's dynamic UI layout
           className="relative w-full h-full max-w-[calc(100dvh*16/9)] max-h-[calc(100vw*9/16)] bg-black shadow-2xl overflow-hidden"
         >
           <img src="/bg-cyber.jpg" alt="Hacker Desk" className="absolute inset-0 w-full h-full object-cover opacity-90" />
@@ -131,7 +139,6 @@ export default function App() {
             </span>
           </div>
 
-          {/* FIXED: Bumped up from 6% to 8% to ensure it never hits the bottom browser bar edge */}
           <div className="absolute bottom-[8%] w-full flex justify-center z-30 pointer-events-none">
              <button 
                 onClick={() => setScreen('deduction')}
@@ -160,35 +167,64 @@ export default function App() {
           <AnimatePresence>
             {screen === 'deduction' && (
               <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="absolute inset-0 z-40 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2">
-                <div className="bg-slate-900 border border-cyan-500/50 p-4 md:p-8 rounded-xl w-full max-w-md shadow-[0_0_50px_rgba(6,182,212,0.2)] text-center max-h-[95vh] overflow-visible">
+                <div className="bg-slate-900 border border-cyan-500/50 p-4 md:p-8 rounded-xl w-full max-w-md shadow-[0_0_50px_rgba(6,182,212,0.2)] text-center max-h-[95vh] overflow-y-auto">
                   <h2 className="title-font text-xl md:text-2xl text-red-500 mb-1">Final Deduction</h2>
                   <p className="text-slate-300 text-[10px] md:text-xs mb-4 border-b border-slate-700 pb-2">Submit the name of the mastermind.</p>
                   
-                  <div className="relative flex flex-col text-left mb-6">
+                  <div className="flex flex-col text-left mb-6">
                     <label className="text-[10px] md:text-xs text-cyan-400 mb-2 uppercase tracking-widest font-bold">Who ordered the hit?</label>
-                    <div onClick={() => setIsDropdownOpen(!isDropdownOpen)} className={`flex items-center justify-between bg-slate-950 border p-2 md:p-3 cursor-pointer transition-all rounded shadow-inner ${isDropdownOpen ? 'border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]' : 'border-slate-700 hover:border-slate-500'}`}>
-                      <span className={`text-xs md:text-sm ${killer ? 'text-white' : 'text-slate-500 font-bold tracking-wider'}`}>{killer ? SUSPECTS.find(s => s.id === killer).label : 'SELECT TARGET ID...'}</span>
-                      <ChevronDown size={16} className={`text-cyan-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                    <div onClick={() => setIsPopupOpen(true)} className={`flex items-center justify-between bg-slate-950 border p-2 md:p-3 cursor-pointer transition-all rounded shadow-inner ${isPopupOpen ? 'border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]' : 'border-slate-700 hover:border-slate-500'}`}>
+                      <span className={`text-xs md:text-sm ${killer ? 'text-white' : 'text-slate-500 font-bold tracking-wider uppercase'}`}>{killer ? SUSPECTS.find(s => s.id === killer).label : 'SELECT TARGET ID...'}</span>
+                      <ChevronDown size={16} className={`text-cyan-500 transition-transform duration-300 ${isPopupOpen ? 'rotate-180' : ''}`} />
                     </div>
-                    <AnimatePresence>
-                      {isDropdownOpen && (
-                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute top-full left-0 right-0 mt-2 bg-slate-950 border border-cyan-500/50 rounded shadow-[0_0_20px_rgba(6,182,212,0.4)] overflow-hidden z-50">
-                          {SUSPECTS.map((suspect) => (
-                            <div key={suspect.id} onClick={() => { setKiller(suspect.id); setIsDropdownOpen(false); }} className="px-4 py-3 border-b border-slate-800 last:border-none text-slate-300 text-[10px] md:text-sm cursor-pointer hover:bg-cyan-900/40 hover:text-cyan-300 transition-colors">{suspect.label}</div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </div>
                   
                   <div className="flex gap-2">
-                    <button onClick={() => { setScreen('game'); setIsDropdownOpen(false); }} className="flex-1 py-2 md:py-3 border border-slate-600 text-slate-300 hover:bg-slate-800 uppercase tracking-widest text-[10px] md:text-xs font-bold rounded">Back</button>
+                    <button onClick={() => setScreen('game')} className="flex-1 py-2 md:py-3 border border-slate-600 text-slate-300 hover:bg-slate-800 uppercase tracking-widest text-[10px] md:text-xs font-bold rounded">Back</button>
                     <button onClick={() => setScreen('debrief')} disabled={!killer} className="flex-1 py-2 md:py-3 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white uppercase tracking-widest text-[10px] md:text-xs font-bold rounded shadow-[0_0_20px_rgba(239,68,68,0.4)]">Lock Answer</button>
                   </div>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* SUSPECT SELECTOR POPUP MODAL */}
+          <AnimatePresence>
+            {isPopupOpen && (
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+              >
+                <motion.div 
+                  initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+                  className="w-full max-w-sm bg-slate-900 border border-cyan-500/50 rounded-xl shadow-[0_0_40px_rgba(6,182,212,0.4)] overflow-hidden"
+                >
+                  <div className="p-3 bg-black/50 border-b border-slate-700 text-center">
+                    <h3 className="title-font text-cyan-400 font-bold uppercase tracking-widest text-[10px] md:text-xs">Select Target ID</h3>
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    {SUSPECTS.map((suspect) => (
+                      <button 
+                        key={suspect.id}
+                        onClick={() => { setKiller(suspect.id); setIsPopupOpen(false); }}
+                        className="px-4 py-4 border-b border-slate-800/50 text-slate-200 hover:bg-cyan-900/40 hover:text-cyan-300 transition-colors text-xs md:text-sm text-left uppercase tracking-wider font-bold"
+                      >
+                        {suspect.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="p-2 bg-black/50">
+                    <button onClick={() => setIsPopupOpen(false)} className="w-full py-2.5 text-slate-500 hover:text-white transition-colors text-[10px] md:text-xs tracking-widest uppercase font-bold rounded">
+                      Cancel
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
         </motion.div>
       )}
 
