@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;700&family=Orbitron:wght@400;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-black text-slate-200 overflow-hidden;
+    font-family: 'Fira Code', monospace;
+  }
+  h1, h2, h3, .title-font {
+    font-family: 'Orbitron', sans-serif;
+  }
+}
+
+/* CRT Scanline Overlay */
+.scanlines {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 4px, 3px 100%;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Vignette for screen edge darkening */
+.vignette {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.8) 100%);
+  pointer-events: none;
+  z-index: 40;
+}
+
+/* Holographic Glass Panel */
+.holo-panel {
+  background: rgba(13, 17, 28, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.1), inset 0 0 20px rgba(6, 182, 212, 0.05);
+}
+
+/* Custom Cyber Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
+::-webkit-scrollbar-thumb { background: theme('colors.cyan.600'); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: theme('colors.cyan.400'); }
+
+/* Text Glow Utilities */
+.neon-text-cyan { text-shadow: 0 0 8px rgba(6, 182, 212, 0.8); }
+.neon-text-pink { text-shadow: 0 0 8px rgba(236, 72, 153, 0.8); }
+.neon-text-red { text-shadow: 0 0 8px rgba(239, 68, 68, 0.8); }
