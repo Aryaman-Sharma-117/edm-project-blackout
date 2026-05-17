@@ -46,7 +46,7 @@ export default function App() {
   const [scannedFiles, setScannedFiles] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
   const [killer, setKiller] = useState('');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // New state for custom dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (screen !== 'game' && screen !== 'deduction') return;
@@ -66,7 +66,8 @@ export default function App() {
   };
 
   return (
-    <div className="fixed inset-0 w-screen h-screen bg-black font-mono flex items-center justify-center overflow-hidden selection:bg-cyan-500/30">
+    // FIXED: Using style={{height: '100dvh'}} forces it to respect mobile browser address bars perfectly
+    <div className="fixed top-0 left-0 w-full bg-black font-mono flex items-center justify-center overflow-hidden selection:bg-cyan-500/30" style={{ height: '100dvh' }}>
       <div className="absolute inset-0 pointer-events-none z-20 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)]" />
 
       {/* --- INTRO SCREEN --- */}
@@ -118,7 +119,8 @@ export default function App() {
       {(screen === 'game' || screen === 'deduction') && (
         <motion.div 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}
-          className="relative w-full h-full max-w-[calc(100vh*16/9)] max-h-[calc(100vw*9/16)] bg-black shadow-2xl overflow-hidden"
+          // FIXED: Uses 100dvh math so it safely boxes itself inside the browser's dynamic UI layout
+          className="relative w-full h-full max-w-[calc(100dvh*16/9)] max-h-[calc(100vw*9/16)] bg-black shadow-2xl overflow-hidden"
         >
           <img src="/bg-cyber.jpg" alt="Hacker Desk" className="absolute inset-0 w-full h-full object-cover opacity-90" />
           <div className="scanlines z-10" />
@@ -129,7 +131,8 @@ export default function App() {
             </span>
           </div>
 
-          <div className="absolute bottom-[6%] w-full flex justify-center z-30 pointer-events-none">
+          {/* FIXED: Bumped up from 6% to 8% to ensure it never hits the bottom browser bar edge */}
+          <div className="absolute bottom-[8%] w-full flex justify-center z-30 pointer-events-none">
              <button 
                 onClick={() => setScreen('deduction')}
                 className="bg-red-600/90 hover:bg-red-500 text-white px-6 md:px-10 py-2 md:py-3 uppercase tracking-widest text-xs md:text-sm font-bold border border-red-400 shadow-[0_0_20px_rgba(239,68,68,0.5)] rounded pointer-events-auto active:scale-95 transition-all"
@@ -154,7 +157,6 @@ export default function App() {
             );
           })}
 
-          {/* DEDUCTION OVERLAY (With Custom Styled Dropdown) */}
           <AnimatePresence>
             {screen === 'deduction' && (
               <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="absolute inset-0 z-40 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2">
@@ -162,36 +164,17 @@ export default function App() {
                   <h2 className="title-font text-xl md:text-2xl text-red-500 mb-1">Final Deduction</h2>
                   <p className="text-slate-300 text-[10px] md:text-xs mb-4 border-b border-slate-700 pb-2">Submit the name of the mastermind.</p>
                   
-                  {/* CUSTOM CYBERPUNK DROPDOWN */}
                   <div className="relative flex flex-col text-left mb-6">
                     <label className="text-[10px] md:text-xs text-cyan-400 mb-2 uppercase tracking-widest font-bold">Who ordered the hit?</label>
-                    
-                    {/* Select Trigger Box */}
-                    <div 
-                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className={`flex items-center justify-between bg-slate-950 border p-2 md:p-3 cursor-pointer transition-all rounded shadow-inner ${isDropdownOpen ? 'border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]' : 'border-slate-700 hover:border-slate-500'}`}
-                    >
-                      <span className={`text-xs md:text-sm ${killer ? 'text-white' : 'text-slate-500 font-bold tracking-wider'}`}>
-                        {killer ? SUSPECTS.find(s => s.id === killer).label : 'SELECT TARGET ID...'}
-                      </span>
+                    <div onClick={() => setIsDropdownOpen(!isDropdownOpen)} className={`flex items-center justify-between bg-slate-950 border p-2 md:p-3 cursor-pointer transition-all rounded shadow-inner ${isDropdownOpen ? 'border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]' : 'border-slate-700 hover:border-slate-500'}`}>
+                      <span className={`text-xs md:text-sm ${killer ? 'text-white' : 'text-slate-500 font-bold tracking-wider'}`}>{killer ? SUSPECTS.find(s => s.id === killer).label : 'SELECT TARGET ID...'}</span>
                       <ChevronDown size={16} className={`text-cyan-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                     </div>
-
-                    {/* Dropdown Options Menu */}
                     <AnimatePresence>
                       {isDropdownOpen && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                          className="absolute top-full left-0 right-0 mt-2 bg-slate-950 border border-cyan-500/50 rounded shadow-[0_0_20px_rgba(6,182,212,0.4)] overflow-hidden z-50"
-                        >
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute top-full left-0 right-0 mt-2 bg-slate-950 border border-cyan-500/50 rounded shadow-[0_0_20px_rgba(6,182,212,0.4)] overflow-hidden z-50">
                           {SUSPECTS.map((suspect) => (
-                            <div 
-                              key={suspect.id}
-                              onClick={() => { setKiller(suspect.id); setIsDropdownOpen(false); }}
-                              className="px-4 py-3 border-b border-slate-800 last:border-none text-slate-300 text-xs md:text-sm cursor-pointer hover:bg-cyan-900/40 hover:text-cyan-300 transition-colors"
-                            >
-                              {suspect.label}
-                            </div>
+                            <div key={suspect.id} onClick={() => { setKiller(suspect.id); setIsDropdownOpen(false); }} className="px-4 py-3 border-b border-slate-800 last:border-none text-slate-300 text-[10px] md:text-sm cursor-pointer hover:bg-cyan-900/40 hover:text-cyan-300 transition-colors">{suspect.label}</div>
                           ))}
                         </motion.div>
                       )}
@@ -212,8 +195,8 @@ export default function App() {
       {/* --- CLUE MODAL --- */}
       <AnimatePresence>
         {activeFile && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-2">
-            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className={`w-full max-w-lg max-h-[95vh] flex flex-col bg-slate-900 border ${scannedFiles.includes(activeFile.id) ? activeFile.borderColor : 'border-slate-700'} rounded-xl overflow-hidden shadow-2xl relative`}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-2" style={{ height: '100dvh' }}>
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className={`w-full max-w-lg max-h-[90dvh] flex flex-col bg-slate-900 border ${scannedFiles.includes(activeFile.id) ? activeFile.borderColor : 'border-slate-700'} rounded-xl overflow-hidden shadow-2xl relative`}>
               {isScanning && <div className="absolute inset-0 bg-cyan-500/10 animate-[pulse_0.2s_infinite] pointer-events-none z-10" />}
               
               <div className="flex justify-between items-center p-2 md:p-4 border-b border-slate-700 bg-black/50 shrink-0">
@@ -249,8 +232,8 @@ export default function App() {
 
       {/* --- DEBRIEF SCREEN --- */}
       {screen === 'debrief' && (
-        <div className="z-50 absolute inset-0 flex items-center justify-center bg-black/90 backdrop-blur p-2">
-          <div className="w-full max-w-md max-h-[95vh] overflow-y-auto p-4 md:p-6 bg-slate-900 border border-slate-700 rounded-xl text-center shadow-2xl">
+        <div className="z-50 absolute inset-0 flex items-center justify-center bg-black/90 backdrop-blur p-2" style={{ height: '100dvh' }}>
+          <div className="w-full max-w-md max-h-[95dvh] overflow-y-auto p-4 md:p-6 bg-slate-900 border border-slate-700 rounded-xl text-center shadow-2xl">
             {timeLeft <= 0 ? (
               <>
                 <h1 className="title-font text-2xl md:text-4xl text-red-500 mb-2 drop-shadow-[0_0_20px_rgba(239,68,68,0.8)]">SYSTEM WIPED</h1>
